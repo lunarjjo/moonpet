@@ -152,7 +152,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: moonpet-desktop
-          path: dist/*.tar.gz
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
           if-no-files-found: error
 
   release:
@@ -174,7 +176,7 @@ jobs:
       - name: checksum
         run: |
           cd dist
-          sha256sum *.apk *.tar.gz > SHA256SUMS.txt
+          sha256sum *.apk *.tar.gz *.zip > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: buat rilis
@@ -184,4 +186,5 @@ jobs:
           files: |
             dist/*.apk
             dist/*.tar.gz
+            dist/*.zip
             dist/SHA256SUMS.txt
