@@ -127,13 +127,21 @@ jobs:
         run: |
           mkdir -p /tmp/smoke && tar xzf "dist/moonpet-linux-x64-v${VERSION}.tar.gz" -C /tmp/smoke
           cd "/tmp/smoke/moonpet-linux-x64-v${VERSION}"
+          ls -la
+          echo "--- ldd llama-server:"
+          ldd ./llama-server 2>&1 | head -12 || true
           sed -i 's|xdg-open .*|true;|; s|gio open .*|true;|; s|x-www-browser .*|true;|' moonpet || true
+          sh -n moonpet && echo "moonpet.sh sintaks OK"
           nohup ./moonpet > /tmp/smoke/server.log 2>&1 &
           for i in $(seq 1 40); do
             curl -sf http://127.0.0.1:8199/health > /dev/null && break
             sleep 1
           done
-          curl -sf http://127.0.0.1:8199/health
+          if ! curl -sf http://127.0.0.1:8199/health; then
+            echo "=== SERVER TIDAK HIDUP — log: ==="
+            cat /tmp/smoke/server.log || true
+            exit 1
+          fi
           curl -sf http://127.0.0.1:8199/ | grep -q "MoonPet"
           REPLY=$(curl -s http://127.0.0.1:8199/v1/chat/completions \
             -H 'Content-Type: application/json' \
