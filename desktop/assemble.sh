@@ -29,7 +29,7 @@ MODEL_NAME="moonpet-lfm2.5-350m-q4km.gguf"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$(mktemp -d)"
-OUTDIR="${ROOT}/../dist"
+OUTDIR="${ROOT}/dist"
 OUTROOT="moonpet-${TARGET}-x64-v${VERSION}"
 PKG="${OUTDIR}/${OUTROOT}"
 mkdir -p "$PKG" "$OUTDIR"

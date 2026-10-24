@@ -92,12 +92,13 @@ jobs:
 
       - name: ganti nama artefak
         run: |
-          V="${GITHUB_REF_NAME#v}"
+          RAW="${GITHUB_REF_NAME#v}"
+          if ! echo "$RAW" | grep -qE '^[0-9]+\.[0-9]+'; then RAW="0.1.0"; fi
           mkdir -p dist
           cp android_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-             "dist/moonpet-android-arm64-v${V:-0.1.0}.apk"
+             "dist/moonpet-android-arm64-v${RAW}.apk"
           cp android_app/build/app/outputs/flutter-apk/app-x86_64-release.apk \
-             "dist/moonpet-android-x64-v${V:-0.1.0}.apk"
+             "dist/moonpet-android-x64-v${RAW}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -114,17 +115,18 @@ jobs:
       - name: assemble tiga paket desktop
         run: |
           chmod +x desktop/assemble.sh
-          V="${GITHUB_REF_NAME#v}"
+          RAW="${GITHUB_REF_NAME#v}"
+          if ! echo "$RAW" | grep -qE '^[0-9]+\.[0-9]+'; then RAW="0.1.0"; fi
+          echo "VERSION=$RAW" >> "$GITHUB_ENV"
           for T in windows linux macos; do
-            ./desktop/assemble.sh "$T" "${V:-0.1.0}"
+            ./desktop/assemble.sh "$T" "$RAW"
           done
           ls -la dist/
 
       - name: uji asap paket linux (satu-klik penuh, tanpa browser)
         run: |
-          V="${GITHUB_REF_NAME#v}"
-          mkdir -p /tmp/smoke && tar xzf "dist/moonpet-linux-x64-v${V:-0.1.0}.tar.gz" -C /tmp/smoke
-          cd "/tmp/smoke/moonpet-linux-x64-v${V:-0.1.0}"
+          mkdir -p /tmp/smoke && tar xzf "dist/moonpet-linux-x64-v${VERSION}.tar.gz" -C /tmp/smoke
+          cd "/tmp/smoke/moonpet-linux-x64-v${VERSION}"
           sed -i 's|xdg-open .*|true;|; s|gio open .*|true;|; s|x-www-browser .*|true;|' moonpet || true
           nohup ./moonpet > /tmp/smoke/server.log 2>&1 &
           for i in $(seq 1 40); do
