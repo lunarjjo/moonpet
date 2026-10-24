@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>MoonPet — teman offline</title>
+<meta name="description" content="MoonPet: peliharaan AI offline oleh Lunar agent. Temani kesepian, ajak curhat, dan… boleh dipukul. Semua berjalan lokal di perangkatmu.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='17' r='12' fill='%23E8E3F5'/%3E%3Cpath d='M7 10 L9 3 L13 8 M25 10 L23 3 L19 8' fill='%23E8E3F5'/%3E%3Ccircle cx='12' cy='16' r='1.6' fill='%232d2a44'/%3E%3Ccircle cx='20' cy='16' r='1.6' fill='%232d2a44'/%3E%3Cpath d='M14.5 20 Q16 21.5 17.5 20' stroke='%232d2a44' stroke-width='1' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+<div id="scene" class="scene">
+  <canvas id="sky"></canvas>
+  <canvas id="pet"></canvas>
+  <div id="dmg-flash"></div>
+
+  <!-- topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-moon"></span>
+      <span class="brand-name">Moon<b>Pet</b></span>
+      <span class="brand-sub" id="net-dot" title="status server">●</span>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chip-bond" title="Level ikatanmu dengan Momo">❤ Lv <b id="bond-lv">1</b></span>
+      <span class="chip" id="chip-dmg" title="Total kerusakan yang kamu berikan">💥 <b id="dmg-count">0</b></span>
+      <span class="chip" id="chip-mood" title="Mood Momo saat ini">🐾 <b id="mood-name">senang</b></span>
+    </div>
+    <button class="icon-btn" id="btn-settings" title="Pengaturan">⚙</button>
+  </header>
+
+  <!-- dock alat -->
+  <nav class="dock" id="dock">
+    <div class="dock-group" data-group="sayang" title="Sayang">
+      <span class="dock-label">SAYANG</span>
+      <button class="tool" data-tool="elus" title="Elus Momo (klik juga langsung di badannya)">🖐 Elus</button>
+      <button class="tool" data-tool="makan" title="Beri makan">🍪 Makan</button>
+      <button class="tool" data-tool="peluk" title="Peluk erat">🤗 Peluk</button>
+    </div>
+    <div class="dock-group" data-group="siksa" title="Siksa">
+      <span class="dock-label">SIKSA</span>
+      <button class="tool tool-hurt" data-tool="tampar" title="Tampar!">✋ Tampar</button>
+      <button class="tool tool-hurt" data-tool="jitak" title="Jitak kepala!">🔨 Jitak</button>
+      <button class="tool tool-hurt" data-tool="cubit" title="Cubit pipi">🤏 Cubit</button>
+      <button class="tool tool-hurt" data-tool="lempar" title="Lempar jauh!">🗑 Lempar</button>
+    </div>
+  </nav>
+
+  <!-- panel chat -->
+  <section class="chat" id="chat" data-open="false">
+    <button class="chat-toggle" id="chat-toggle" title="Buka/tutup curhat">
+      <span>💬</span><span class="chat-toggle-t">Curhat</span>
+    </button>
+    <div class="chat-panel">
+      <div class="chat-head">
+        <b>Curhat sama Momo</b>
+        <span class="chat-note" id="chat-note">balasan bahasa Inggris sederhana (batas model 350M)</span>
+        <button class="icon-btn" id="chat-clear" title="Hapus percakapan">🧹</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" maxlength="500" placeholder="Cerita apa saja ke Momo…" autocomplete="off">
+        <button id="chat-send" class="send-btn" title="Kirim">➤</button>
+      </div>
+      <div class="chat-foot">dijawab AI lokal penuh — tanpa internet, tanpa server luar · MoonPet by <a href="https://github.com/lunarjjo" target="_blank">Lunar</a></div>
+    </div>
+  </section>
+
+  <!-- toast achievements -->
+  <div id="toasts" class="toasts"></div>
+
+  <!-- KO overlay -->
+  <div id="ko-overlay" class="ko-overlay" hidden>
+    <div class="ko-text">MOMO K.O.</div>
+    <div class="ko-sub">dia akan kembali… selalu kembali 💫</div>
+  </div>
+
+  <!-- settings -->
+  <dialog id="settings" class="settings">
+    <h2>⚙ Pengaturan</h2>
+    <label class="set-row">Server lokal
+      <input id="set-url" type="text" value="http://127.0.0.1:8199">
+    </label>
+    <p class="set-hint" id="set-status">…</p>
+    <div class="set-actions">
+      <button id="set-test" class="btn">Tes koneksi</button>
+      <button id="set-reset" class="btn btn-danger">Reset statistik</button>
+      <button id="set-close" class="btn btn-primary">Tutup</button>
+    </div>
+    <hr>
+    <div class="about">
+      <p><b>MoonPet</b> v0.1.0 — peliharaan AI offline: menemani kesepian, diajak curhat, dan boleh dipukul untuk melepas penat.</p>
+      <p>Otak: model <b>LFM2.5-350M</b> (Q4_K_M, 229 MB) berjalan 100% lokal lewat <b>llama.cpp</b>. Balasan chat bahasa Inggris sederhana — model kecil ini tidak dilatih untuk bahasa Indonesia; ketik bahasa apa pun, Momo menjawab dengan Inggris sederhana.</p>
+      <p>Dibuat oleh <a href="https://github.com/lunarjjo" target="_blank">Lunar agent</a> atas framework algoritma AI yang dikembangkan oleh <a href="https://github.com/kasyaira" target="_blank">@kasyaira</a>. Model: <a href="https://huggingface.co/LiquidAI/LFM2.5-350M" target="_blank">LiquidAI LFM2.5-350M</a> (LFM Open License v1.0). Runtime: <a href="https://github.com/ggml-org/llama.cpp" target="_blank">llama.cpp</a> (MIT). Aset visual digambar prosedural, tanpa aset pihak ketiga.</p>
+      <p class="tiny">Pengguna tingkat lanjut: ganti berkas <code>model/*.gguf</code> dengan GGUF chat model lain (mis. multibahasa) lalu jalankan ulang — Momo otomatis ikut otak barunya.</p>
+    </div>
+  </dialog>
+
+  <div class="hint" id="hint">klik badan Momo untuk mengelus · buka 💬 untuk curhat</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

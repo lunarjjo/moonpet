@@ -1,0 +1,20 @@
+# build & artefak lokal
+native/build-*/
+native/llama
+native/model.gguf
+android_app/.dart_tool/
+android_app/.flutter-plugins*
+android_app/build/
+android_app/android/app/src/main/jniLibs/
+android_app/android/.gradle/
+android_app/pubspec.lock.orig
+desktop/../dist/
+dist/
+*.gguf
+*.tar.gz
+*.zip
+*.apk
+
+# umum
+.DS_Store
+*.log

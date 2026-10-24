@@ -1,0 +1,179 @@
+name: build
+
+# MoonPet — CI: uji + bangun Android APK & paket desktop + rilis saat tag v*
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  LLAMA_TAG: b11856
+  MODEL_URL: https://huggingface.co/LiquidAI/LFM2.5-350M-GGUF/resolve/main/LFM2.5-350M-Q4_K_M.gguf
+  MODEL_SHA: 7e6f72643caafc9a68256686638c4d7916f2cec76d1df478d4c3ddcd95a6aed4
+
+jobs:
+  android:
+    name: Android APK (analyze + test + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.24.5
+          cache: true
+
+      - name: fetch sumber llama.cpp terpin
+        run: |
+          chmod +x tools/fetch_llama_src.sh
+          ./tools/fetch_llama_src.sh "$LLAMA_TAG"
+
+      - name: build host .so (untuk uji FFI nyata)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq cmake > /dev/null
+          cmake -B native/build-host -DCMAKE_BUILD_TYPE=Release native
+          cmake --build native/build-host -j"$(nproc)"
+
+      - name: unduh model terpin (SHA-256)
+        run: |
+          curl -fL --retry 3 -o native/build-host/model.gguf "$MODEL_URL"
+          echo "$MODEL_SHA  native/build-host/model.gguf" | sha256sum -c -
+
+      - name: flutter analyze + test (termasuk inferensi nyata)
+        working-directory: android_app
+        run: |
+          flutter pub get
+          flutter analyze --no-fatal-infos
+          LD_LIBRARY_PATH=../native/build-host/bin flutter test
+
+      - name: siapkan NDK
+        run: |
+          NDKS=$(ls -d "$ANDROID_HOME"/ndk/* 2>/dev/null | sort -V | tail -1 || true)
+          if [ -z "$NDKS" ]; then
+            yes | sdkmanager "ndk;27.0.12077973" > /dev/null
+            NDKS=$(ls -d "$ANDROID_HOME"/ndk/* | sort -V | tail -1)
+          fi
+          echo "ANDROID_NDK_HOME=$NDKS" >> "$GITHUB_ENV"
+          echo "memakai NDK: $NDKS"
+
+      - name: build .so Android (arm64-v8a + x86_64)
+        run: |
+          for ABI in arm64-v8a x86_64; do
+            cmake -B "native/build-android-$ABI" -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+              -DANDROID_ABI="$ABI" -DANDROID_PLATFORM=android-23 native
+            cmake --build "native/build-android-$ABI" -j"$(nproc)"
+            mkdir -p "android_app/android/app/src/main/jniLibs/$ABI"
+            find "native/build-android-$ABI" -name 'libmoonpet.so' -exec \
+              cp {} "android_app/android/app/src/main/jniLibs/$ABI/" \;
+            find "native/build-android-$ABI" -name 'libllama*.so*' -exec \
+              cp {} "android_app/android/app/src/main/jniLibs/$ABI/" \;
+            find "native/build-android-$ABI" -name 'libggml*.so*' -exec \
+              cp {} "android_app/android/app/src/main/jniLibs/$ABI/" \;
+            find "native/build-android-$ABI" -name 'libmtmd*.so*' -exec \
+              cp {} "android_app/android/app/src/main/jniLibs/$ABI/" \;
+            # model dibundel sebagai .so — ter-ekstrak ke nativeLibraryDir saat instal
+            cp native/build-host/model.gguf "android_app/android/app/src/main/jniLibs/$ABI/libmoonpetmodel.so"
+          done
+          ls -la android_app/android/app/src/main/jniLibs/*/
+
+      - name: flutter build APK (split per ABI)
+        working-directory: android_app
+        run: |
+          flutter build apk --release --split-per-abi --target-platform android-arm64,android-x64
+          ls -la build/app/outputs/flutter-apk/
+
+      - name: ganti nama artefak
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          cp android_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
+             "dist/moonpet-android-arm64-v${V:-0.1.0}.apk"
+          cp android_app/build/app/outputs/flutter-apk/app-x86_64-release.apk \
+             "dist/moonpet-android-x64-v${V:-0.1.0}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: moonpet-android
+          path: dist/*.apk
+
+  desktop:
+    name: Paket desktop (win/linux/macos) + uji asap linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: assemble tiga paket desktop
+        run: |
+          chmod +x desktop/assemble.sh
+          V="${GITHUB_REF_NAME#v}"
+          for T in windows linux macos; do
+            ./desktop/assemble.sh "$T" "${V:-0.1.0}"
+          done
+          ls -la dist/
+
+      - name: uji asap paket linux (satu-klik penuh, tanpa browser)
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          mkdir -p /tmp/smoke && tar xzf "dist/moonpet-linux-x64-v${V:-0.1.0}.tar.gz" -C /tmp/smoke
+          cd "/tmp/smoke/moonpet-linux-x64-v${V:-0.1.0}"
+          sed -i 's|xdg-open .*|true;|; s|gio open .*|true;|; s|x-www-browser .*|true;|' moonpet || true
+          nohup ./moonpet > /tmp/smoke/server.log 2>&1 &
+          for i in $(seq 1 40); do
+            curl -sf http://127.0.0.1:8199/health > /dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8199/health
+          curl -sf http://127.0.0.1:8199/ | grep -q "MoonPet"
+          REPLY=$(curl -s http://127.0.0.1:8199/v1/chat/completions \
+            -H 'Content-Type: application/json' \
+            -d '{"messages":[{"role":"system","content":"You are Momo the pet cat. Reply short and sweet."},{"role":"user","content":"hello momo"}],"max_tokens":30}' \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["choices"][0]["message"]["content"])')
+          echo "BALASAN: $REPLY"
+          test -n "$REPLY"
+          pkill -f llama-server || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: moonpet-desktop
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Rilis GitHub
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, desktop]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: moonpet-*
+          merge-multiple: true
+          path: dist
+
+      - name: checksum
+        run: |
+          cd dist
+          sha256sum *.apk *.tar.gz > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: buat rilis
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.apk
+            dist/*.tar.gz
+            dist/SHA256SUMS.txt
