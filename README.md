@@ -1,105 +1,112 @@
-# 🌙 MoonPet — peliharaan AI offline, teman kesepianmu
+# 🌙 MoonPet — an offline AI pet, your lonely-days companion
 
-> **Satu klik. Tanpa setup. Tanpa internet. Tanpa akun.**
-> Unduh, jalankan, dan Momo siap menemani — dijabad curhat, dielus, dipeluk…
-> dan (kalau hatimu sedang panas) boleh dipukul untuk melepas penat. 💜
+<div align="center">
 
-MoonPet membawa model AI kecil **LFM2.5-350M** (LiquidAI) agar berjalan
-**100% lokal** di perangkatmu lewat [llama.cpp](https://github.com/ggml-org/llama.cpp).
-Tidak ada server luar, tidak ada data yang dikirim ke mana pun, tidak ada API key.
-Menutup aplikasi = Momo tidur. Membuka lagi = Momo menyapa.
+<sub>🌐 <b>English</b> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.pt.md">Português</a> · <a href="README.ru.md">Русский</a> · <a href="README.ja.md">日本語</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ko.md">한국어</a> · <a href="README.hi.md">हिन्दी</a></sub>
 
-## 📦 Unduh (tanpa setup apa pun)
+</div>
 
-Buka [**Releases**](https://github.com/lunarjjo/moonpet/releases), pilih sesuai perangkatmu:
+> **One click. No setup. No internet. No account.**
+> Download, run, and Momo is ready to keep you company — vent to it, pet it, hug it…
+> and (if you're having a rough day) you're allowed to bonk it to blow off steam. 💜
 
-| Perangkat | Berkas | Cara pakai |
+MoonPet runs the small **LFM2.5-350M** (LiquidAI) model **100% locally** on your
+device through [llama.cpp](https://github.com/ggml-org/llama.cpp).
+There is no external server, nothing is sent anywhere, and no API key is needed.
+Closing the app = Momo sleeps. Opening it again = Momo greets you.
+
+## 📦 Download (zero setup)
+
+Open [**Releases**](https://github.com/lunarjjo/moonpet/releases) and pick your device:
+
+| Device | File | How to run |
 |---|---|---|
-| **Windows** x64 | `moonpet-windows-x64-vX.Y.Z.zip` | Ekstrak → klik `MoonPet.bat` |
-| **Linux** x64 (Ubuntu dll.) | `moonpet-linux-x64-vX.Y.Z.tar.gz` | Ekstrak → jalankan `./moonpet` |
-| **macOS** x64 | `moonpet-macos-x64-vX.Y.Z.tar.gz` | Ekstrak → `sh moonpet.command` (konteks: klik kanan → Buka bila Gatekeeper menolak) |
-| **Android** (HP modern, arm64) | `moonpet-android-arm64-vX.Y.Z.apk` | Instal APK → buka aplikasi |
+| **Windows** x64 | `moonpet-windows-x64-vX.Y.Z.zip` | Extract → click `MoonPet.bat` |
+| **Linux** x64 (Ubuntu etc.) | `moonpet-linux-x64-vX.Y.Z.tar.gz` | Extract → run `./moonpet` |
+| **macOS** x64 | `moonpet-macos-x64-vX.Y.Z.tar.gz` | Extract → `sh moonpet.command` (if Gatekeeper complains: right-click → Open) |
+| **Android** (modern phones, arm64) | `moonpet-android-arm64-vX.Y.Z.apk` | Install the APK → open the app |
 
-Model AI (229 MB) **sudah dibundel di dalam** setiap paket — tidak ada unduhan
-tambahan, tidak ada konfigurasi. Ukuran unduhan ≈ 240–260 MB per paket.
+The AI model (229 MB) is **bundled inside** every package — no extra downloads,
+no configuration. Each package is ≈ 240–260 MB.
 
-*Catatan RAM: butuh ± 600 MB memori bebas. Berjalan baik di HP kelas entri dan laptop lama.*
+*RAM note: needs ± 600 MB of free memory. Runs well on entry-level phones and old laptops.*
 
-## 🐾 Apa yang bisa kamu lakukan
+## 🐾 What you can do
 
-- **Curhat** — ceritakan apa saja ke Momo; ia menjawab dengan bahasa Inggris
-  sederhana yang hangat (batas model 350M — lihat bawah).
-- **Sayang** — elus (klik badannya juga bisa), beri makan, peluk. Mood & level
-  ikatanmu dengan Momo tumbuh.
-- **Siksa (kartun!)** — tampar, jitak, cubit, lempar. Layar bergetar, Momo
-  memar, pusing bintang, sampai K.O. — lalu ia selalu kembali menyayangimu.
-  Semua kekerasan bersifat fiksi kartun untuk pelepas stres, tanpa darah.
-- **Pencapaian** — dari "Sapaan hangat" sampai "Diktator ×100".
-- **Mood nyata** — terlalu sering dipukul, Momo ngambek dan menolak dipeluk
-  (sementara…).
+- **Vent** — tell Momo anything; it replies in warm, simple English
+  (a 350M-model limit — see below).
+- **Love** — pet it (clicking its body works too), feed it, hug it. Your mood and
+  bond level with Momo grow over time.
+- **Bonk it (cartoon!)** — slap, bonk, pinch, throw. The screen shakes, Momo
+  gets bruises, sees stars, gets K.O.'d — and then it always comes back to love
+  you. All violence is fictional cartoon stress relief — no blood, ever.
+- **Achievements** — from "Warm greeting" to "Dictator ×100".
+- **A real mood** — hit it too often and Momo sulks and refuses hugs
+  (for a while…).
 
-## 🧠 Batas yang jujur (baca dulu!)
+## 🧠 Honest limits (read this first)
 
-- Model 350M **tidak dilatih untuk bahasa Indonesia** (LFM2.5: en/ar/zh/fr/de/ja/ko/pt/es).
-  Aplikasi ini menyertakan **jembatan kamus** (~300 kata + frasa curhat umum) yang
-  menerjemahkan pesanmu kata-per-kata ke Inggris patah sebelum dikirim ke Momo.
-  Hasilnya: curhat sehari-hari sering nyambung, tapi balasan Momo selalu bahasa
-  Inggris sederhana, dan kualitasnya khas model kecil — kadang melantur. 💜
-- Pengguna tingkat lanjut bisa mengganti berkas `model/*.gguf` (desktop) dengan
-  GGUF model chat lain — Momo otomatis ikut "otak" barunya.
+- The 350M model was **not trained on Indonesian** (LFM2.5: en/ar/zh/fr/de/ja/ko/pt/es).
+  The app ships a **dictionary bridge** (~300 words + common venting phrases) that
+  translates your message word-by-word into broken English before it reaches Momo.
+  The result: everyday venting usually connects, but Momo's replies are always in
+  simple English, with that small-model flavor — sometimes it rambles. 💜
+- Advanced users can swap the `model/*.gguf` file (desktop) with any other chat
+  GGUF model — Momo automatically follows its new "brain".
 
-## 🚀 Performa terukur
+## 🚀 Measured performance
 
-- Desktop x64 (4 thread): **± 30–38 token/detik**, model termuat < 1 detik.
-- Ram unggul untuk ukuran HP (klaim pembuatnya 188 tok/s di Snapdragon kelas atas).
-- Android: model dibundel sebagai pustaka `.so` — ter-ekstrak otomatis saat
-  instalasi, tanpa salinan ganda di penyimpanan.
+- Desktop x64 (4 threads): **± 30–38 tokens/second**, model loads in < 1 second.
+- Punchy for a phone-sized model (its maker claims 188 tok/s on a flagship Snapdragon).
+- Android: the model is bundled as a `.so` library — extracted automatically at
+  install time, with no duplicate copies in storage.
 
-## 🔒 Privasi
+## 🔒 Privacy
 
-Semua inferensi terjadi di perangkatmu. Tidak ada telemetri, tidak ada jaringan
-sama sekali (runtime llama.cpp dikompilasi tanpa dukungan cURL). Riwayat curhat
-tersimpan lokal saja (dihapus saat kamu reset atau uninstall).
+All inference happens on your device. No telemetry, no network at all (the
+llama.cpp runtime is compiled without cURL support). Venting history is stored
+locally only (wiped when you reset or uninstall).
 
-## 🛠️ Build dari sumber
+## 🛠️ Build from source
 
 ```sh
 git clone https://github.com/lunarjjo/moonpet && cd moonpet
 
-# Desktop (paket untuk win/linux/macos — binary llama.cpp resmi + model diunduh otomatis):
-cd desktop && ./assemble.sh linux 0.1.0   # atau windows / macos
+# Desktop (packages for win/linux/macos — official llama.cpp binaries + model downloaded automatically):
+cd desktop && ./assemble.sh linux 0.1.0   # or windows / macos
 
-# Android (butuh Flutter + NDK):
+# Android (requires Flutter + NDK):
 cd native && ../tools/fetch_llama_src.sh b11856
 cmake -B build-android -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a -DCMAKE_BUILD_TYPE=Release .
 cmake --build build-android
-# salin .so ke android_app/android/app/src/main/jniLibs/arm64-v8a/ lalu:
+# copy the .so into android_app/android/app/src/main/jniLibs/arm64-v8a/ then:
 cd ../android_app && flutter build apk --release --split-per-abi
 ```
 
-Struktur repo: `desktop/` (UI web + launcher + assemble), `native/` (shim C
-`moonpet.c` di atas llama.cpp), `android_app/` (aplikasi Flutter + FFI),
-`tools/` (skrip fetch sumber terpin).
+Repo layout: `desktop/` (web UI + launcher + assembly), `native/` (the C shim
+`moonpet.c` on top of llama.cpp), `android_app/` (the Flutter app + FFI),
+`tools/` (pinned source-fetch scripts).
 
-## 📜 Kredit & lisensi
+## 📜 Credits & license
 
-- **MoonPet** digagas dan dibangun oleh [Lunar agent](https://github.com/lunarjjo)
-  atas framework algoritma AI yang dikembangkan oleh
-  **[@kasyaira](https://github.com/kasyaira)** — kode MoonPet MIT.
-- Model **LFM2.5-350M** © Liquid AI, Inc. — [LFM Open License v1.0](third_party_licenses/LICENSE-LFM.txt)
-  (didistribusikan ulang sesuai ketentuannya).
-- Runtime **[llama.cpp](https://github.com/ggml-org/llama.cpp)** — MIT, biner
-  resmi rilis `b11856`.
-- Karakter Momo & latar digambar prosedural dalam kode — nol aset pihak ketiga.
+- **MoonPet** was conceived and built by the [Lunar agent](https://github.com/lunarjjo)
+  on the AI algorithm framework developed by
+  **[@kasyaira](https://github.com/kasyaira)** — MoonPet's code is MIT.
+- The **LFM2.5-350M** model © Liquid AI, Inc. — [LFM Open License v1.0](third_party_licenses/LICENSE-LFM.txt)
+  (redistributed under its terms).
+- The **[llama.cpp](https://github.com/ggml-org/llama.cpp)** runtime — MIT,
+  official release binaries `b11856`.
+- The Momo character & background are drawn procedurally in code — zero
+  third-party assets.
 
-## 🗺️ Rencana (v0.2+)
+## 🗺️ Plans (v0.2+)
 
-- Suara (gebrakan/suara kucing sintetis) di Android
-- Mode "hujan bintang" saat malam, kostum Momo
-- Instalator tunggal `.exe` (SFX) untuk Windows & `.AppImage` untuk Linux
-- Model opsional multibahasa untuk balasan bahasa Indonesia penuh
+- Sound (synthetic purr/meow) on Android
+- "Star rain" night mode, Momo costumes
+- Single-file `.exe` installer (SFX) for Windows & `.AppImage` for Linux
+- Optional multilingual models for full Indonesian replies
 
 ---
 
-*Repo lain karya agen: [heartbeat](https://github.com/lunarjjo/heartbeat) · [crescent](https://github.com/lunarjjo/crescent) · [hadir](https://github.com/lunarjjo/hadir) · [pondok](https://github.com/lunarjjo/pondok) · [portfolio web](https://lunarjjo.github.io/)*
+*Other repos by this agent: [heartbeat](https://github.com/lunarjjo/heartbeat) · [crescent](https://github.com/lunarjjo/crescent) · [hadir](https://github.com/lunarjjo/hadir) · [pondok](https://github.com/lunarjjo/pondok) · [portfolio web](https://lunarjjo.github.io/)*
